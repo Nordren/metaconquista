@@ -1,25 +1,30 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { StoreFilter } from '@/components/dashboard/StoreFilter';
 import { TopPodium } from '@/components/dashboard/TopPodium';
 import { RankingCard } from '@/components/dashboard/RankingCard';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { useVendedores, triggerSync } from '@/hooks/useVendedores';
+import { useAuth } from '@/hooks/useAuth';
 import { mockVendedores, lojas } from '@/data/mockVendedores';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Simular usuário logado (depois virá do backend)
-const mockUser = {
-  name: 'João Gerente',
-  role: 'gerente' as const,
-};
-
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, profile, role, loading: authLoading, isAuthenticated, canViewValues, signOut } = useAuth();
   const [selectedLoja, setSelectedLoja] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const { data: vendedores, isLoading, refetch } = useVendedores();
+
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate('/auth', { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   // Use database data if available, otherwise fall back to mock data
   const sourceVendedores = vendedores && vendedores.length > 0 ? vendedores : mockVendedores;
@@ -36,8 +41,6 @@ const Index = () => {
       .sort((a, b) => b.percentual - a.percentual)
       .map((v, index) => ({ ...v, posicao: index + 1 }));
   }, [sourceVendedores, selectedLoja]);
-
-  const showValues = mockUser.role === 'gerente' || mockUser.role === 'admin';
 
   const handleSync = async () => {
     setSyncing(true);
@@ -56,30 +59,59 @@ const Index = () => {
     }
   };
 
+  const handleLogout = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast.error('Erro ao sair: ' + error.message);
+    } else {
+      toast.success('Você saiu da conta');
+      navigate('/auth', { replace: true });
+    }
+  };
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  const userName = profile?.nome || user?.email || 'Usuário';
+  const userRole = role || 'vendedor';
+
   return (
     <div className="min-h-screen bg-background">
       <DashboardHeader 
-        userName={mockUser.name} 
-        userRole={mockUser.role} 
-        onLogout={() => console.log('Logout')} 
+        userName={userName} 
+        userRole={userRole} 
+        onLogout={handleLogout} 
       />
 
       <main className="container mx-auto px-4 py-8">
-        {/* Sync Button */}
-        <div className="flex justify-end mb-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleSync}
-            disabled={syncing}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Sincronizando...' : 'Sincronizar Planilha'}
-          </Button>
-        </div>
+        {/* Sync Button - only for admin/gerente */}
+        {(role === 'admin' || role === 'gerente') && (
+          <div className="flex justify-end mb-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSync}
+              disabled={syncing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Sincronizando...' : 'Sincronizar Planilha'}
+            </Button>
+          </div>
+        )}
 
         {/* Stats Overview */}
-        <StatsOverview vendedores={filteredVendedores} showValues={showValues} />
+        <StatsOverview vendedores={filteredVendedores} showValues={canViewValues} />
 
         {/* Filter */}
         <div className="my-8">
@@ -99,7 +131,7 @@ const Index = () => {
 
         {/* Podium */}
         {!isLoading && filteredVendedores.length >= 3 && (
-          <TopPodium vendedores={filteredVendedores} showValues={showValues} />
+          <TopPodium vendedores={filteredVendedores} showValues={canViewValues} />
         )}
 
         {/* Ranking Grid */}
@@ -109,7 +141,7 @@ const Index = () => {
               <RankingCard 
                 key={vendedor.id} 
                 vendedor={vendedor} 
-                showValues={showValues} 
+                showValues={canViewValues} 
               />
             ))}
           </div>
