@@ -6,7 +6,7 @@ async function fetchVendedores(): Promise<Vendedor[]> {
   const { data, error } = await supabase
     .from('vendedores')
     .select('*')
-    .order('percentual', { ascending: false });
+    .order('realizado', { ascending: false }); // Ordenar por faturamento
 
   if (error) {
     console.error('Error fetching vendedores:', error);
@@ -22,7 +22,7 @@ async function fetchVendedores(): Promise<Vendedor[]> {
     realizado: Number(v.realizado),
     percentual: Number(v.percentual),
     vendaDia: Number(v.venda_dia),
-    posicao: index + 1,
+    posicao: index + 1, // Posição baseada no faturamento
   }));
 }
 

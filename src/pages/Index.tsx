@@ -43,9 +43,9 @@ const Index = () => {
       filtered = filtered.filter((v) => v.loja === selectedLoja);
     }
 
-    // Recalcular posições após filtro
+    // Recalcular posições após filtro - ordenar por faturamento (realizado)
     return filtered
-      .sort((a, b) => b.percentual - a.percentual)
+      .sort((a, b) => b.realizado - a.realizado)
       .map((v, index) => ({ ...v, posicao: index + 1 }));
   }, [sourceVendedores, selectedLoja, role, profile?.loja]);
 
@@ -143,6 +143,7 @@ const Index = () => {
             <RankingCard 
               vendedor={linkedVendedor} 
               showValues={false}
+              showOwnValues={true}
               highlighted
             />
           </div>
@@ -156,14 +157,18 @@ const Index = () => {
         {/* Ranking Grid */}
         {!isLoading && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredVendedores.map((vendedor) => (
-              <RankingCard 
-                key={vendedor.id} 
-                vendedor={vendedor} 
-                showValues={canViewValues}
-                highlighted={role === 'vendedor' && vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase()}
-              />
-            ))}
+            {filteredVendedores.map((vendedor) => {
+              const isOwnCard = role === 'vendedor' && vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase();
+              return (
+                <RankingCard 
+                  key={vendedor.id} 
+                  vendedor={vendedor} 
+                  showValues={canViewValues}
+                  showOwnValues={isOwnCard}
+                  highlighted={isOwnCard}
+                />
+              );
+            })}
           </div>
         )}
 
