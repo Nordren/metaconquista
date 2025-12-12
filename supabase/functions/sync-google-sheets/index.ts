@@ -56,15 +56,39 @@ serve(async (req) => {
     }
 
     // Transform and insert data
-    const vendedores = rows.map((row, index) => ({
-      nome: row.nome || row.Nome || '',
-      loja: row.loja || row.Loja || '',
-      meta: parseNumber(row.meta || row.Meta),
-      realizado: parseNumber(row.realizado || row.Realizado),
-      percentual: parseNumber(row.percentual || row.Percentual || row['%']),
-      venda_dia: parseNumber(row.venda_dia || row.vendaDia || row['Venda Dia'] || row['Venda/Dia']),
-      posicao: parseInt(row.posicao || row.Posicao || row['Posição'] || String(index + 1)) || (index + 1),
-    })).filter(v => v.nome && v.loja);
+    const vendedores = rows
+      .map((row, index) => {
+        const values = Object.values(row);
+
+        const nome =
+          row.nome ||
+          row.Nome ||
+          row.NOME ||
+          row['Nome Vendedor'] ||
+          row['NOME VENDEDOR'] ||
+          row.Vendedor ||
+          row.VENDEDOR ||
+          (values.length > 0 ? String(values[0]) : '');
+
+        const loja =
+          row.loja ||
+          row.Loja ||
+          row.LOJA ||
+          row.Filial ||
+          row.FILIAL ||
+          (values.length > 1 ? String(values[1]) : values.length > 0 ? String(values[0]) : '');
+
+        return {
+          nome,
+          loja,
+          meta: parseNumber(row.meta || row.Meta || row.META),
+          realizado: parseNumber(row.realizado || row.Realizado || row.REALIZADO || row.Faturamento || row.FATURAMENTO),
+          percentual: parseNumber(row.percentual || row.Percentual || row.PERCENTUAL || row['%'] || row['% META']),
+          venda_dia: parseNumber(row.venda_dia || row.vendaDia || row['Venda Dia'] || row['Venda/Dia'] || row['VENDA DIA']),
+          posicao: parseInt(row.posicao || row.Posicao || row['Posição'] || row['POSIÇÃO'] || String(index + 1)) || index + 1,
+        };
+      })
+      .filter((v) => v.nome && v.loja);
 
     console.log(`Inserting ${vendedores.length} vendedores...`);
 
