@@ -70,6 +70,7 @@ export type Database = {
           posicao: number
           realizado: number
           updated_at: string
+          user_id: string | null
           venda_dia: number
         }
         Insert: {
@@ -82,6 +83,7 @@ export type Database = {
           posicao?: number
           realizado?: number
           updated_at?: string
+          user_id?: string | null
           venda_dia?: number
         }
         Update: {
@@ -94,6 +96,7 @@ export type Database = {
           posicao?: number
           realizado?: number
           updated_at?: string
+          user_id?: string | null
           venda_dia?: number
         }
         Relationships: []

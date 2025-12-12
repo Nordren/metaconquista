@@ -1,5 +1,6 @@
-import { BarChart3, LogOut, User } from 'lucide-react';
+import { BarChart3, LogOut, User, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardHeaderProps {
   userName?: string;
@@ -8,6 +9,8 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ userName = 'Usuário', userRole = 'vendedor', onLogout }: DashboardHeaderProps) {
+  const navigate = useNavigate();
+  
   const roleLabel = {
     vendedor: 'Vendedor',
     gerente: 'Gerente',
@@ -28,6 +31,12 @@ export function DashboardHeader({ userName = 'Usuário', userRole = 'vendedor', 
         </div>
 
         <div className="flex items-center gap-4">
+          {userRole === 'admin' && (
+            <Button variant="outline" size="sm" onClick={() => navigate('/admin')} className="gap-2">
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Admin</span>
+            </Button>
+          )}
           <div className="hidden items-center gap-2 sm:flex">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
               <User className="h-4 w-4 text-primary" />
