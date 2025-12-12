@@ -91,24 +91,12 @@ const Index = () => {
       <DashboardHeader 
         userName={userName} 
         userRole={userRole} 
-        onLogout={handleLogout} 
+        onLogout={handleLogout}
+        onSync={handleSync}
+        syncing={syncing}
       />
 
       <main className="container mx-auto px-4 py-8">
-        {/* Sync Button - only for admin/gerente */}
-        {(role === 'admin' || role === 'gerente') && (
-          <div className="flex justify-end mb-4">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleSync}
-              disabled={syncing}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-              {syncing ? 'Sincronizando...' : 'Sincronizar Planilha'}
-            </Button>
-          </div>
-        )}
 
         {/* Stats Overview */}
         <StatsOverview vendedores={filteredVendedores} showValues={canViewValues} />

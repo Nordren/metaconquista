@@ -1,4 +1,4 @@
-import { BarChart3, LogOut, User, Shield } from 'lucide-react';
+import { BarChart3, LogOut, User, Shield, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,9 +6,17 @@ interface DashboardHeaderProps {
   userName?: string;
   userRole?: 'vendedor' | 'gerente' | 'admin';
   onLogout?: () => void;
+  onSync?: () => void;
+  syncing?: boolean;
 }
 
-export function DashboardHeader({ userName = 'Usuário', userRole = 'vendedor', onLogout }: DashboardHeaderProps) {
+export function DashboardHeader({ 
+  userName = 'Usuário', 
+  userRole = 'vendedor', 
+  onLogout,
+  onSync,
+  syncing = false
+}: DashboardHeaderProps) {
   const navigate = useNavigate();
   
   const roleLabel = {
@@ -16,6 +24,8 @@ export function DashboardHeader({ userName = 'Usuário', userRole = 'vendedor', 
     gerente: 'Gerente',
     admin: 'Administrador',
   };
+
+  const canSync = userRole === 'admin' || userRole === 'gerente';
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -28,6 +38,18 @@ export function DashboardHeader({ userName = 'Usuário', userRole = 'vendedor', 
             <h1 className="text-lg font-bold text-foreground">Dashboard de Vendas</h1>
             <p className="text-xs text-muted-foreground">Acompanhe seu desempenho</p>
           </div>
+          {canSync && onSync && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onSync}
+              disabled={syncing}
+              className="ml-2"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{syncing ? 'Sincronizando...' : 'Sincronizar'}</span>
+            </Button>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
