@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 interface RankingCardProps {
   vendedor: Vendedor;
   showValues?: boolean;
+  highlighted?: boolean;
 }
 
 const getMedalIcon = (posicao: number) => {
@@ -45,7 +46,7 @@ const getProgressColor = (percentual: number) => {
   return 'bg-red-500';
 };
 
-export function RankingCard({ vendedor, showValues = true }: RankingCardProps) {
+export function RankingCard({ vendedor, showValues = true, highlighted = false }: RankingCardProps) {
   const faltaMeta = 100 - vendedor.percentual;
   const valorFaltante = vendedor.meta - vendedor.realizado;
   const diasRestantes = 15; // Exemplo: dias restantes no mês
@@ -55,7 +56,8 @@ export function RankingCard({ vendedor, showValues = true }: RankingCardProps) {
     <div
       className={cn(
         'relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl',
-        getCardStyle(vendedor.posicao)
+        getCardStyle(vendedor.posicao),
+        highlighted && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
       )}
     >
       {/* Position badge */}

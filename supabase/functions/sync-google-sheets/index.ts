@@ -58,34 +58,28 @@ serve(async (req) => {
     // Transform and insert data
     const vendedores = rows
       .map((row, index) => {
-        const values = Object.values(row);
-
-        const nome =
-          row.nome ||
-          row.Nome ||
-          row.NOME ||
-          row['Nome Vendedor'] ||
-          row['NOME VENDEDOR'] ||
-          row.Vendedor ||
-          row.VENDEDOR ||
-          (values.length > 0 ? String(values[0]) : '');
-
-        const loja =
-          row.loja ||
-          row.Loja ||
-          row.LOJA ||
-          row.Filial ||
-          row.FILIAL ||
-          (values.length > 1 ? String(values[1]) : values.length > 0 ? String(values[0]) : '');
+        // Mapeamento exato das colunas da planilha:
+        // Vendedora (B) → nome
+        // Loja (D) → loja
+        // Meta Atual (F) → meta
+        // Venda (G) → realizado
+        // % (H) → percentual
+        // Venda/Dia (K) → venda_dia
+        const nome = row['Vendedora'] || row.Vendedora || row.vendedora || '';
+        const loja = row['Loja'] || row.Loja || row.loja || '';
+        const meta = parseNumber(row['Meta Atual'] || row['Meta atual'] || row.meta);
+        const realizado = parseNumber(row['Venda'] || row.Venda || row.venda);
+        const percentual = parseNumber(row['%'] || row.percentual);
+        const venda_dia = parseNumber(row['Venda/Dia'] || row['Venda/dia'] || row.venda_dia);
 
         return {
           nome,
           loja,
-          meta: parseNumber(row.meta || row.Meta || row.META),
-          realizado: parseNumber(row.realizado || row.Realizado || row.REALIZADO || row.Faturamento || row.FATURAMENTO),
-          percentual: parseNumber(row.percentual || row.Percentual || row.PERCENTUAL || row['%'] || row['% META']),
-          venda_dia: parseNumber(row.venda_dia || row.vendaDia || row['Venda Dia'] || row['Venda/Dia'] || row['VENDA DIA']),
-          posicao: parseInt(row.posicao || row.Posicao || row['Posição'] || row['POSIÇÃO'] || String(index + 1)) || index + 1,
+          meta,
+          realizado,
+          percentual,
+          venda_dia,
+          posicao: index + 1,
         };
       })
       .filter((v) => v.nome && v.loja);

@@ -29,10 +29,17 @@ const Index = () => {
   // Use database data if available, otherwise fall back to mock data
   const sourceVendedores = vendedores && vendedores.length > 0 ? vendedores : mockVendedores;
 
+  // Filtrar dados baseado na role do usuário
   const filteredVendedores = useMemo(() => {
     let filtered = [...sourceVendedores];
     
-    if (selectedLoja) {
+    // Gerente só vê a loja dele (baseado no profile.loja)
+    if (role === 'gerente' && profile?.loja) {
+      filtered = filtered.filter((v) => v.loja === profile.loja);
+    }
+    
+    // Aplicar filtro de loja selecionado (apenas admin pode filtrar)
+    if (role === 'admin' && selectedLoja) {
       filtered = filtered.filter((v) => v.loja === selectedLoja);
     }
 
@@ -40,7 +47,15 @@ const Index = () => {
     return filtered
       .sort((a, b) => b.percentual - a.percentual)
       .map((v, index) => ({ ...v, posicao: index + 1 }));
-  }, [sourceVendedores, selectedLoja]);
+  }, [sourceVendedores, selectedLoja, role, profile?.loja]);
+
+  // Encontrar o vendedor vinculado ao usuário atual (para vendedor comum)
+  const linkedVendedor = useMemo(() => {
+    if (role !== 'vendedor' || !profile?.nome) return null;
+    return filteredVendedores.find(v => 
+      v.nome.toLowerCase() === profile.nome.toLowerCase()
+    );
+  }, [filteredVendedores, role, profile?.nome]);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -98,22 +113,38 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8">
 
-        {/* Stats Overview */}
-        <StatsOverview vendedores={filteredVendedores} showValues={canViewValues} />
+        {/* Stats Overview - apenas para gerente e admin */}
+        {(role === 'admin' || role === 'gerente') && (
+          <StatsOverview vendedores={filteredVendedores} showValues={canViewValues} />
+        )}
 
-        {/* Filter */}
-        <div className="my-8">
-          <StoreFilter 
-            lojas={lojas} 
-            selected={selectedLoja} 
-            onSelect={setSelectedLoja} 
-          />
-        </div>
+        {/* Filter - apenas para admin */}
+        {role === 'admin' && (
+          <div className="my-8">
+            <StoreFilter 
+              lojas={lojas} 
+              selected={selectedLoja} 
+              onSelect={setSelectedLoja} 
+            />
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoading && (
           <div className="flex justify-center py-8">
             <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        )}
+
+        {/* Card destacado do vendedor logado */}
+        {!isLoading && role === 'vendedor' && linkedVendedor && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Seu Desempenho</h2>
+            <RankingCard 
+              vendedor={linkedVendedor} 
+              showValues={false}
+              highlighted
+            />
           </div>
         )}
 
@@ -129,7 +160,8 @@ const Index = () => {
               <RankingCard 
                 key={vendedor.id} 
                 vendedor={vendedor} 
-                showValues={canViewValues} 
+                showValues={canViewValues}
+                highlighted={role === 'vendedor' && vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase()}
               />
             ))}
           </div>
@@ -138,7 +170,7 @@ const Index = () => {
         {!isLoading && filteredVendedores.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <p className="text-lg text-muted-foreground">
-              Nenhum vendedor encontrado para esta loja.
+              Nenhum vendedor encontrado.
             </p>
           </div>
         )}
