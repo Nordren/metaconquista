@@ -7,7 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Shield, Users, Link2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ArrowLeft, Shield, Users, Link2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import type { AppRole } from '@/hooks/useAuth';
 
@@ -32,6 +35,14 @@ export default function Admin() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newUser, setNewUser] = useState({
+    nome: '',
+    email: '',
+    password: '',
+    role: 'vendedor' as AppRole,
+  });
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -51,21 +62,18 @@ export default function Admin() {
   const fetchData = async () => {
     setLoadingUsers(true);
     try {
-      // Fetch profiles with roles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, nome');
 
       if (profilesError) throw profilesError;
 
-      // Fetch roles
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
 
       if (rolesError) throw rolesError;
 
-      // Fetch vendedores
       const { data: vendedoresData, error: vendedoresError } = await supabase
         .from('vendedores')
         .select('id, nome, loja, user_id');
@@ -74,7 +82,6 @@ export default function Admin() {
 
       setVendedores(vendedoresData || []);
 
-      // Combine data
       const usersWithRoles: UserWithRole[] = (profiles || []).map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.id);
         const linkedVendedor = vendedoresData?.find(v => v.user_id === profile.id);
@@ -93,6 +100,58 @@ export default function Admin() {
       toast.error('Erro ao carregar dados');
     } finally {
       setLoadingUsers(false);
+    }
+  };
+
+  const createUser = async () => {
+    if (!newUser.nome || !newUser.email || !newUser.password) {
+      toast.error('Preencha todos os campos');
+      return;
+    }
+
+    if (newUser.password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: newUser.email,
+        password: newUser.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { nome: newUser.nome },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        // Update role if not vendedor (default)
+        if (newUser.role !== 'vendedor') {
+          await supabase
+            .from('user_roles')
+            .update({ role: newUser.role })
+            .eq('user_id', data.user.id);
+        }
+      }
+
+      toast.success('Usuário criado com sucesso');
+      setDialogOpen(false);
+      setNewUser({ nome: '', email: '', password: '', role: 'vendedor' });
+      
+      // Wait a moment for the trigger to create profile
+      setTimeout(() => fetchData(), 1000);
+    } catch (error: any) {
+      console.error('Error creating user:', error);
+      if (error.message?.includes('already registered')) {
+        toast.error('Este email já está cadastrado');
+      } else {
+        toast.error('Erro ao criar usuário');
+      }
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -117,13 +176,11 @@ export default function Admin() {
 
   const linkVendedor = async (userId: string, vendedorId: string | null) => {
     try {
-      // First, unlink any existing vendedor for this user
       await supabase
         .from('vendedores')
         .update({ user_id: null })
         .eq('user_id', userId);
 
-      // Then link the new vendedor if selected
       if (vendedorId) {
         const { error } = await supabase
           .from('vendedores')
@@ -168,19 +225,85 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Shield className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Painel Admin</h1>
-              <p className="text-sm text-muted-foreground">Gerencie usuários e permissões</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Shield className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">Painel Admin</h1>
+                <p className="text-sm text-muted-foreground">Gerencie usuários e permissões</p>
+              </div>
             </div>
           </div>
+
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <UserPlus className="h-4 w-4" />
+                Novo Usuário
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Criar Novo Usuário</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nome">Nome</Label>
+                  <Input
+                    id="nome"
+                    value={newUser.nome}
+                    onChange={(e) => setNewUser(prev => ({ ...prev, nome: e.target.value }))}
+                    placeholder="Nome completo"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="email@exemplo.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Senha</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Mínimo 6 caracteres"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Role</Label>
+                  <Select
+                    value={newUser.role}
+                    onValueChange={(value) => setNewUser(prev => ({ ...prev, role: value as AppRole }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="vendedor">Vendedor</SelectItem>
+                      <SelectItem value="gerente">Gerente</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={createUser} disabled={creating} className="w-full">
+                  {creating ? 'Criando...' : 'Criar Usuário'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
