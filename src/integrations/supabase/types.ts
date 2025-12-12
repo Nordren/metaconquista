@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      vendedores: {
+        Row: {
+          created_at: string
+          id: string
+          loja: string
+          meta: number
+          nome: string
+          percentual: number
+          posicao: number
+          realizado: number
+          updated_at: string
+          venda_dia: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          loja: string
+          meta?: number
+          nome: string
+          percentual?: number
+          posicao?: number
+          realizado?: number
+          updated_at?: string
+          venda_dia?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          loja?: string
+          meta?: number
+          nome?: string
+          percentual?: number
+          posicao?: number
+          realizado?: number
+          updated_at?: string
+          venda_dia?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
