@@ -25,7 +25,7 @@ export function DashboardHeader({
     admin: 'Administrador',
   };
 
-  const canSync = userRole === 'admin' || userRole === 'gerente';
+  const canSync = userRole === 'admin';
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
