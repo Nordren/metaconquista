@@ -24,20 +24,20 @@ export function TopPodium({ vendedores, showValues = true }: TopPodiumProps) {
         <Medal className="mb-1 h-6 w-6 text-gray-400" />
         <div className="flex h-24 w-24 flex-col items-center justify-center rounded-t-xl bg-gradient-to-b from-gray-400 to-gray-500 text-white">
           <span className="text-2xl font-bold">2º</span>
-          <span className="text-xs opacity-80">{second.percentual}%</span>
+          {showValues && <span className="text-xs opacity-80">R$ {(second.realizado / 1000).toFixed(0)}k</span>}
         </div>
         <p className="mt-2 text-center text-sm font-medium text-foreground">{second.nome}</p>
       </div>
 
       {/* 1st Place */}
       <div className="flex flex-col items-center">
-        <div className="mb-2 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 text-3xl font-bold text-white shadow-xl ring-4 ring-yellow-500/30">
+        <div className="mb-2 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-3xl font-bold text-white shadow-xl ring-4 ring-primary/30">
           {first.nome.charAt(0)}
         </div>
-        <Trophy className="mb-1 h-8 w-8 text-yellow-500 drop-shadow-lg" />
-        <div className="flex h-32 w-28 flex-col items-center justify-center rounded-t-xl bg-gradient-to-b from-yellow-400 to-amber-500 text-white shadow-lg">
+        <Trophy className="mb-1 h-8 w-8 text-primary drop-shadow-lg" />
+        <div className="flex h-32 w-28 flex-col items-center justify-center rounded-t-xl bg-gradient-to-b from-primary to-accent text-white shadow-lg">
           <span className="text-3xl font-bold">1º</span>
-          <span className="text-sm opacity-90">{first.percentual}%</span>
+          {showValues && <span className="text-sm opacity-90">R$ {(first.realizado / 1000).toFixed(0)}k</span>}
         </div>
         <p className="mt-2 text-center font-semibold text-foreground">{first.nome}</p>
       </div>
@@ -50,7 +50,7 @@ export function TopPodium({ vendedores, showValues = true }: TopPodiumProps) {
         <Award className="mb-1 h-5 w-5 text-amber-600" />
         <div className="flex h-20 w-20 flex-col items-center justify-center rounded-t-xl bg-gradient-to-b from-amber-600 to-amber-800 text-white">
           <span className="text-xl font-bold">3º</span>
-          <span className="text-xs opacity-80">{third.percentual}%</span>
+          {showValues && <span className="text-xs opacity-80">R$ {(third.realizado / 1000).toFixed(0)}k</span>}
         </div>
         <p className="mt-2 text-center text-sm font-medium text-foreground">{third.nome}</p>
       </div>

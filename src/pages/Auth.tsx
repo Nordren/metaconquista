@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Trophy, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import logoConquista from '@/assets/logo-conquista.png';
 
 const emailSchema = z.string().email('Email inválido');
 const passwordSchema = z.string().min(6, 'Senha deve ter pelo menos 6 caracteres');
@@ -56,21 +57,25 @@ export default function Auth() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(180,70%,50%)] to-[hsl(200,80%,35%)]">
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <Card className="w-full max-w-md shadow-2xl border-border/50">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(180,70%,50%)] to-[hsl(200,80%,35%)] p-4">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-            <Trophy className="h-8 w-8 text-primary" />
+          <div className="mx-auto">
+            <img 
+              src={logoConquista} 
+              alt="Conquista Atacadista" 
+              className="h-20 w-auto mx-auto rounded-xl"
+            />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">Ranking de Vendas</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">Ranking de Vendas</CardTitle>
             <CardDescription>Acompanhe sua performance e conquiste o topo!</CardDescription>
           </div>
         </CardHeader>

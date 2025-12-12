@@ -7,6 +7,7 @@ interface RankingCardProps {
   vendedor: Vendedor;
   showValues?: boolean;
   highlighted?: boolean;
+  showOwnValues?: boolean; // Para mostrar valores apenas do próprio vendedor
 }
 
 const getMedalIcon = (posicao: number) => {
@@ -46,11 +47,14 @@ const getProgressColor = (percentual: number) => {
   return 'bg-red-500';
 };
 
-export function RankingCard({ vendedor, showValues = true, highlighted = false }: RankingCardProps) {
+export function RankingCard({ vendedor, showValues = true, highlighted = false, showOwnValues = false }: RankingCardProps) {
   const faltaMeta = 100 - vendedor.percentual;
   const valorFaltante = vendedor.meta - vendedor.realizado;
   const diasRestantes = 15; // Exemplo: dias restantes no mês
-  const vendaNecessariaDia = valorFaltante / diasRestantes;
+  const vendaNecessariaDia = valorFaltante > 0 ? valorFaltante / diasRestantes : 0;
+  
+  // Mostrar valores se tiver permissão OU se for o próprio card destacado
+  const canSeeValues = showValues || showOwnValues;
 
   return (
     <div
@@ -98,7 +102,7 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false }
             Falta p/ meta
           </div>
           <p className="mt-1 text-lg font-bold text-foreground">
-            {showValues ? `R$ ${valorFaltante.toLocaleString('pt-BR')}` : `${faltaMeta.toFixed(0)}%`}
+            {canSeeValues ? `R$ ${Math.max(valorFaltante, 0).toLocaleString('pt-BR')}` : `${Math.max(faltaMeta, 0).toFixed(0)}%`}
           </p>
         </div>
         <div className="rounded-xl bg-background/50 p-3">
@@ -107,12 +111,12 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false }
             Precisa/dia
           </div>
           <p className="mt-1 text-lg font-bold text-foreground">
-            {showValues ? `R$ ${vendaNecessariaDia.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : '---'}
+            {canSeeValues ? `R$ ${vendaNecessariaDia.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : '---'}
           </p>
         </div>
       </div>
 
-      {showValues && (
+      {canSeeValues && (
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-background/50 p-3">
             <p className="text-xs text-muted-foreground">Meta</p>
@@ -121,8 +125,8 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false }
             </p>
           </div>
           <div className="rounded-xl bg-background/50 p-3">
-            <p className="text-xs text-muted-foreground">Realizado</p>
-            <p className="text-sm font-semibold text-green-500">
+            <p className="text-xs text-muted-foreground">Faturamento</p>
+            <p className="text-sm font-semibold text-primary">
               R$ {vendedor.realizado.toLocaleString('pt-BR')}
             </p>
           </div>
