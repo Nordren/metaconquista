@@ -116,25 +116,29 @@ export default function Admin() {
 
     setCreating(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: newUser.email,
-        password: newUser.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: { nome: newUser.nome },
+      // Get the current session to send the auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('Sessão expirada. Faça login novamente.');
+        return;
+      }
+
+      const response = await supabase.functions.invoke('create-user', {
+        body: {
+          email: newUser.email,
+          password: newUser.password,
+          nome: newUser.nome,
+          role: newUser.role,
         },
       });
 
-      if (error) throw error;
+      if (response.error) {
+        throw new Error(response.error.message || 'Erro ao criar usuário');
+      }
 
-      if (data.user) {
-        // Update role if not vendedor (default)
-        if (newUser.role !== 'vendedor') {
-          await supabase
-            .from('user_roles')
-            .update({ role: newUser.role })
-            .eq('user_id', data.user.id);
-        }
+      if (response.data?.error) {
+        throw new Error(response.data.error);
       }
 
       toast.success('Usuário criado com sucesso');
@@ -145,10 +149,10 @@ export default function Admin() {
       setTimeout(() => fetchData(), 1000);
     } catch (error: any) {
       console.error('Error creating user:', error);
-      if (error.message?.includes('already registered')) {
+      if (error.message?.includes('already registered') || error.message?.includes('already been registered')) {
         toast.error('Este email já está cadastrado');
       } else {
-        toast.error('Erro ao criar usuário');
+        toast.error(error.message || 'Erro ao criar usuário');
       }
     } finally {
       setCreating(false);
