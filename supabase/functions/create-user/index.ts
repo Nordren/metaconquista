@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     }
 
     // Parse the request body
-    const { email, password, nome, role } = await req.json()
+    const { email, password, nome, role, loja } = await req.json()
 
     if (!email || !password || !nome) {
       return new Response(
@@ -96,9 +96,22 @@ Deno.serve(async (req) => {
 
       if (updateRoleError) {
         console.error('Error updating role:', updateRoleError)
-        // User was created but role update failed - not critical
       } else {
         console.log('Role updated to:', role)
+      }
+    }
+
+    // If loja is provided (for gerente), update the profile
+    if (loja && newUser.user) {
+      const { error: updateLojaError } = await adminClient
+        .from('profiles')
+        .update({ loja })
+        .eq('id', newUser.user.id)
+
+      if (updateLojaError) {
+        console.error('Error updating loja:', updateLojaError)
+      } else {
+        console.log('Loja set to:', loja)
       }
     }
 

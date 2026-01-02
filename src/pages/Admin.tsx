@@ -42,7 +42,9 @@ export default function Admin() {
     email: '',
     password: '',
     role: 'vendedor' as AppRole,
+    loja: '',
   });
+  const [lojas, setLojas] = useState<string[]>([]);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -81,6 +83,10 @@ export default function Admin() {
       if (vendedoresError) throw vendedoresError;
 
       setVendedores(vendedoresData || []);
+      
+      // Extract unique stores
+      const uniqueLojas = [...new Set((vendedoresData || []).map(v => v.loja))].sort();
+      setLojas(uniqueLojas);
 
       const usersWithRoles: UserWithRole[] = (profiles || []).map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.id);
@@ -130,6 +136,7 @@ export default function Admin() {
           password: newUser.password,
           nome: newUser.nome,
           role: newUser.role,
+          loja: newUser.role === 'gerente' ? newUser.loja : null,
         },
       });
 
@@ -143,7 +150,7 @@ export default function Admin() {
 
       toast.success('Usuário criado com sucesso');
       setDialogOpen(false);
-      setNewUser({ nome: '', email: '', password: '', role: 'vendedor' });
+      setNewUser({ nome: '', email: '', password: '', role: 'vendedor', loja: '' });
       
       // Wait a moment for the trigger to create profile
       setTimeout(() => fetchData(), 1000);
@@ -302,7 +309,25 @@ export default function Admin() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={createUser} disabled={creating} className="w-full">
+                {newUser.role === 'gerente' && (
+                  <div className="space-y-2">
+                    <Label>Loja do Gerente</Label>
+                    <Select
+                      value={newUser.loja}
+                      onValueChange={(value) => setNewUser(prev => ({ ...prev, loja: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a loja" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {lojas.map(loja => (
+                          <SelectItem key={loja} value={loja}>{loja}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <Button onClick={createUser} disabled={creating || (newUser.role === 'gerente' && !newUser.loja)} className="w-full">
                   {creating ? 'Criando...' : 'Criar Usuário'}
                 </Button>
               </div>
