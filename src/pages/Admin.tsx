@@ -43,6 +43,7 @@ export default function Admin() {
     password: '',
     role: 'vendedor' as AppRole,
     loja: '',
+    vendedor_id: '',
   });
   const [lojas, setLojas] = useState<string[]>([]);
 
@@ -137,6 +138,7 @@ export default function Admin() {
           nome: newUser.nome,
           role: newUser.role,
           loja: newUser.role === 'gerente' ? newUser.loja : null,
+          vendedor_id: newUser.role === 'vendedor' ? newUser.vendedor_id : null,
         },
       });
 
@@ -150,7 +152,7 @@ export default function Admin() {
 
       toast.success('Usuário criado com sucesso');
       setDialogOpen(false);
-      setNewUser({ nome: '', email: '', password: '', role: 'vendedor', loja: '' });
+      setNewUser({ nome: '', email: '', password: '', role: 'vendedor', loja: '', vendedor_id: '' });
       
       // Wait a moment for the trigger to create profile
       setTimeout(() => fetchData(), 1000);
@@ -327,7 +329,27 @@ export default function Admin() {
                     </Select>
                   </div>
                 )}
-                <Button onClick={createUser} disabled={creating || (newUser.role === 'gerente' && !newUser.loja)} className="w-full">
+                {newUser.role === 'vendedor' && (
+                  <div className="space-y-2">
+                    <Label>Vincular ao Vendedor</Label>
+                    <Select
+                      value={newUser.vendedor_id}
+                      onValueChange={(value) => setNewUser(prev => ({ ...prev, vendedor_id: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o vendedor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {vendedores
+                          .filter(v => !v.user_id)
+                          .map(v => (
+                            <SelectItem key={v.id} value={v.id}>{v.nome} ({v.loja})</SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <Button onClick={createUser} disabled={creating || (newUser.role === 'gerente' && !newUser.loja) || (newUser.role === 'vendedor' && !newUser.vendedor_id)} className="w-full">
                   {creating ? 'Criando...' : 'Criar Usuário'}
                 </Button>
               </div>

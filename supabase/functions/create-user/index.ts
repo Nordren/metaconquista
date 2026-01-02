@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     }
 
     // Parse the request body
-    const { email, password, nome, role, loja } = await req.json()
+    const { email, password, nome, role, loja, vendedor_id } = await req.json()
 
     if (!email || !password || !nome) {
       return new Response(
@@ -112,6 +112,20 @@ Deno.serve(async (req) => {
         console.error('Error updating loja:', updateLojaError)
       } else {
         console.log('Loja set to:', loja)
+      }
+    }
+
+    // If vendedor_id is provided, link the user to the vendedor
+    if (vendedor_id && newUser.user) {
+      const { error: linkVendedorError } = await adminClient
+        .from('vendedores')
+        .update({ user_id: newUser.user.id })
+        .eq('id', vendedor_id)
+
+      if (linkVendedorError) {
+        console.error('Error linking vendedor:', linkVendedorError)
+      } else {
+        console.log('Vendedor linked:', vendedor_id)
       }
     }
 
