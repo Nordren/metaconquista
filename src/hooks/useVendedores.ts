@@ -34,7 +34,9 @@ export function useVendedores() {
   });
 }
 
-export async function triggerSync() {
-  const response = await supabase.functions.invoke('sync-google-sheets');
+export async function triggerSync(month?: string) {
+  const response = await supabase.functions.invoke('sync-google-sheets', {
+    body: month ? { month } : undefined,
+  });
   return response;
 }

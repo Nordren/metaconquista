@@ -5,6 +5,7 @@ import { StoreFilter } from '@/components/dashboard/StoreFilter';
 import { TopPodium } from '@/components/dashboard/TopPodium';
 import { RankingCard } from '@/components/dashboard/RankingCard';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
+import { getCurrentMonth } from '@/components/dashboard/MonthSelector';
 import { useVendedores, triggerSync } from '@/hooks/useVendedores';
 import { useAuth } from '@/hooks/useAuth';
 import { mockVendedores, lojas } from '@/data/mockVendedores';
@@ -17,6 +18,7 @@ const Index = () => {
   const { user, profile, role, loading: authLoading, isAuthenticated, canViewValues, signOut } = useAuth();
   const [selectedLoja, setSelectedLoja] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const { data: vendedores, isLoading, refetch } = useVendedores();
 
   // Redirect to auth if not authenticated
@@ -60,15 +62,33 @@ const Index = () => {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      const result = await triggerSync();
+      const result = await triggerSync(selectedMonth);
       if (result.error) {
         toast.error('Erro ao sincronizar: ' + result.error.message);
       } else {
-        toast.success('Dados sincronizados com sucesso!');
+        toast.success(`Dados de ${selectedMonth} sincronizados com sucesso!`);
         refetch();
       }
     } catch (error) {
       toast.error('Erro ao sincronizar dados');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleMonthChange = async (month: string) => {
+    setSelectedMonth(month);
+    setSyncing(true);
+    try {
+      const result = await triggerSync(month);
+      if (result.error) {
+        toast.error('Erro ao carregar mês: ' + result.error.message);
+      } else {
+        toast.success(`Dados de ${month} carregados!`);
+        refetch();
+      }
+    } catch (error) {
+      toast.error('Erro ao carregar dados do mês');
     } finally {
       setSyncing(false);
     }
@@ -109,6 +129,8 @@ const Index = () => {
         onLogout={handleLogout}
         onSync={handleSync}
         syncing={syncing}
+        selectedMonth={selectedMonth}
+        onMonthChange={handleMonthChange}
       />
 
       <main className="container mx-auto px-4 py-8">
