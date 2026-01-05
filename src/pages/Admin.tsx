@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ArrowLeft, Shield, Users, Link2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
+import { getCurrentMonth } from '@/components/dashboard/MonthSelector';
 import type { AppRole } from '@/hooks/useAuth';
 
 interface Profile {
@@ -85,9 +86,17 @@ export default function Admin() {
 
       if (rolesError) throw rolesError;
 
+      const { data: links, error: linksError } = await supabase
+        .from('vendedor_links')
+        .select('user_id, nome, loja');
+
+      if (linksError) throw linksError;
+
+      // Pegar vendedores apenas do mês atual (para não duplicar opções no select)
       const { data: vendedoresData, error: vendedoresError } = await supabase
         .from('vendedores')
-        .select('id, nome, loja, user_id');
+        .select('id, nome, loja, user_id, period')
+        .eq('period', getCurrentMonth());
 
       if (vendedoresError) throw vendedoresError;
 
@@ -99,14 +108,14 @@ export default function Admin() {
 
       const usersWithRoles: UserWithRole[] = ((profiles || []) as Profile[]).map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.id);
-        const linkedVendedor = vendedoresData?.find(v => v.user_id === profile.id);
+        const link = links?.find(l => l.user_id === profile.id);
         return {
           id: profile.id,
           email: profile.email,
           nome: profile.nome,
           role: (userRole?.role as AppRole) || 'vendedor',
-          linked_vendedor: linkedVendedor?.nome || null,
-          linked_loja: profile.loja || linkedVendedor?.loja || null,
+          linked_vendedor: link?.nome || null,
+          linked_loja: profile.loja || link?.loja || null,
         };
       });
 
@@ -198,18 +207,27 @@ export default function Admin() {
 
   const linkVendedor = async (userId: string, vendedorId: string | null) => {
     try {
-      await supabase
-        .from('vendedores')
-        .update({ user_id: null })
+      // Remove vínculo atual do usuário (se existir)
+      const { error: clearError } = await supabase
+        .from('vendedor_links')
+        .delete()
         .eq('user_id', userId);
 
-      if (vendedorId) {
-        const { error } = await supabase
-          .from('vendedores')
-          .update({ user_id: userId })
-          .eq('id', vendedorId);
+      if (clearError) throw clearError;
 
-        if (error) throw error;
+      if (vendedorId) {
+        const vendedor = vendedores.find(v => v.id === vendedorId);
+        if (!vendedor) throw new Error('Vendedor não encontrado');
+
+        // Cria/atualiza vínculo por (nome, loja) para persistir entre meses
+        const { error: upsertError } = await supabase
+          .from('vendedor_links')
+          .upsert(
+            { nome: vendedor.nome, loja: vendedor.loja, user_id: userId },
+            { onConflict: 'nome,loja' }
+          );
+
+        if (upsertError) throw upsertError;
       }
 
       await fetchData();
@@ -459,24 +477,28 @@ export default function Admin() {
                               <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Select
-                            value={vendedores.find(v => v.user_id === user.id)?.id || 'none'}
-                            onValueChange={(value) => linkVendedor(user.id, value === 'none' ? null : value)}
-                          >
-                            <SelectTrigger className="w-40">
-                              <SelectValue placeholder="Vincular vendedor" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">Nenhum</SelectItem>
-                              {vendedores
-                                .filter(v => !v.user_id || v.user_id === user.id)
-                                .map(v => (
-                                  <SelectItem key={v.id} value={v.id}>
-                                    {v.nome} ({v.loja})
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
+                          {user.role === 'vendedor' && (
+                            <Select
+                              value={(() => {
+                                const linked = vendedores.find(v => v.nome === user.linked_vendedor && v.loja === user.linked_loja);
+                                return linked?.id || 'none';
+                              })()}
+                              onValueChange={(value) => linkVendedor(user.id, value === 'none' ? null : value)}
+                            >
+                              <SelectTrigger className="w-40">
+                                <SelectValue placeholder="Vincular vendedor" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">Nenhum</SelectItem>
+                                {vendedores
+                                  .map(v => (
+                                    <SelectItem key={v.id} value={v.id}>
+                                      {v.nome} ({v.loja})
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

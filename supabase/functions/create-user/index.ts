@@ -115,15 +115,38 @@ Deno.serve(async (req) => {
       }
     }
 
-    // If vendedor_id is provided, link the user to the vendedor
+    // If vendedor_id is provided, persist the linkage (works across months)
     if (vendedor_id && newUser.user) {
+      // Get vendedor info
+      const { data: vendedorRow, error: vendedorFetchError } = await adminClient
+        .from('vendedores')
+        .select('nome, loja')
+        .eq('id', vendedor_id)
+        .maybeSingle()
+
+      if (vendedorFetchError) {
+        console.error('Error fetching vendedor:', vendedorFetchError)
+      } else if (vendedorRow) {
+        const { error: upsertLinkError } = await adminClient
+          .from('vendedor_links')
+          .upsert(
+            { nome: vendedorRow.nome, loja: vendedorRow.loja, user_id: newUser.user.id },
+            { onConflict: 'nome,loja' }
+          )
+
+        if (upsertLinkError) {
+          console.error('Error upserting vendedor_links:', upsertLinkError)
+        }
+      }
+
+      // Also link the selected vendedor row for immediate UI feedback
       const { error: linkVendedorError } = await adminClient
         .from('vendedores')
         .update({ user_id: newUser.user.id })
         .eq('id', vendedor_id)
 
       if (linkVendedorError) {
-        console.error('Error linking vendedor:', linkVendedorError)
+        console.error('Error linking vendedor row:', linkVendedorError)
       } else {
         console.log('Vendedor linked:', vendedor_id)
       }

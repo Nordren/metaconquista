@@ -18,8 +18,10 @@ const Index = () => {
   const { user, profile, role, loading: authLoading, isAuthenticated, canViewValues, signOut } = useAuth();
   const [selectedLoja, setSelectedLoja] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
-  const { data: vendedores, isLoading, refetch } = useVendedores();
+  const currentMonth = getCurrentMonth();
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const effectiveMonth = role === 'vendedor' ? currentMonth : selectedMonth;
+  const { data: vendedores, isLoading, refetch } = useVendedores(effectiveMonth);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -28,8 +30,9 @@ const Index = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  // Use database data if available, otherwise fall back to mock data
-  const sourceVendedores = vendedores && vendedores.length > 0 ? vendedores : mockVendedores;
+  // Use database data if available; fallback to mock ONLY for the current month
+  const shouldUseMock = (!vendedores || vendedores.length === 0) && effectiveMonth === currentMonth;
+  const sourceVendedores = shouldUseMock ? mockVendedores : (vendedores || []);
 
   // Filtrar dados baseado na role do usuário
   const filteredVendedores = useMemo(() => {
@@ -53,11 +56,19 @@ const Index = () => {
 
   // Encontrar o vendedor vinculado ao usuário atual (para vendedor comum)
   const linkedVendedor = useMemo(() => {
-    if (role !== 'vendedor' || !profile?.nome) return null;
-    return filteredVendedores.find(v => 
-      v.nome.toLowerCase() === profile.nome.toLowerCase()
-    );
-  }, [filteredVendedores, role, profile?.nome]);
+    if (role !== 'vendedor') return null;
+
+    // Prefer link por user_id (mais confiável)
+    const uid = user?.id;
+    if (uid) {
+      const byUserId = filteredVendedores.find(v => v.userId === uid);
+      if (byUserId) return byUserId;
+    }
+
+    // Fallback por nome (para dados mock/legado)
+    if (!profile?.nome) return null;
+    return filteredVendedores.find(v => v.nome.toLowerCase() === profile.nome.toLowerCase());
+  }, [filteredVendedores, role, profile?.nome, user?.id]);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -76,22 +87,10 @@ const Index = () => {
     }
   };
 
-  const handleMonthChange = async (month: string) => {
+  const handleMonthChange = (month: string) => {
+    // vendedor sempre fica no mês atual
+    if (role === 'vendedor') return;
     setSelectedMonth(month);
-    setSyncing(true);
-    try {
-      const result = await triggerSync(month);
-      if (result.error) {
-        toast.error('Erro ao carregar mês: ' + result.error.message);
-      } else {
-        toast.success(`Dados de ${month} carregados!`);
-        refetch();
-      }
-    } catch (error) {
-      toast.error('Erro ao carregar dados do mês');
-    } finally {
-      setSyncing(false);
-    }
   };
 
   const handleLogout = async () => {
@@ -180,7 +179,7 @@ const Index = () => {
         {!isLoading && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredVendedores.map((vendedor) => {
-              const isOwnCard = role === 'vendedor' && vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase();
+              const isOwnCard = role === 'vendedor' && (vendedor.userId ? vendedor.userId === user?.id : vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase());
               return (
                 <RankingCard 
                   key={vendedor.id} 
