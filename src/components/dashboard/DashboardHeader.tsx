@@ -58,7 +58,7 @@ export function DashboardHeader({
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          {canSync && (
+          {(userRole === 'admin' || userRole === 'gerente') && (
             <div className="hidden md:block">
               <MonthSelector selectedMonth={selectedMonth} onMonthChange={onMonthChange} />
             </div>
@@ -89,8 +89,8 @@ export function DashboardHeader({
           </Button>
         </div>
       </div>
-      {/* Mobile month selector */}
-      {canSync && (
+      {/* Mobile month selector - only for admin/gerente */}
+      {(userRole === 'admin' || userRole === 'gerente') && (
         <div className="md:hidden px-4 pb-3">
           <MonthSelector selectedMonth={selectedMonth} onMonthChange={onMonthChange} />
         </div>

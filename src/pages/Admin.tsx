@@ -14,12 +14,20 @@ import { ArrowLeft, Shield, Users, Link2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import type { AppRole } from '@/hooks/useAuth';
 
+interface Profile {
+  id: string;
+  email: string;
+  nome: string;
+  loja: string | null;
+}
+
 interface UserWithRole {
   id: string;
   email: string;
   nome: string;
   role: AppRole;
   linked_vendedor: string | null;
+  linked_loja: string | null;
 }
 
 interface Vendedor {
@@ -67,7 +75,7 @@ export default function Admin() {
     try {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, nome');
+        .select('id, email, nome, loja');
 
       if (profilesError) throw profilesError;
 
@@ -89,7 +97,7 @@ export default function Admin() {
       const uniqueLojas = [...new Set((vendedoresData || []).map(v => v.loja))].sort();
       setLojas(uniqueLojas);
 
-      const usersWithRoles: UserWithRole[] = (profiles || []).map(profile => {
+      const usersWithRoles: UserWithRole[] = ((profiles || []) as Profile[]).map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.id);
         const linkedVendedor = vendedoresData?.find(v => v.user_id === profile.id);
         return {
@@ -98,6 +106,7 @@ export default function Admin() {
           nome: profile.nome,
           role: (userRole?.role as AppRole) || 'vendedor',
           linked_vendedor: linkedVendedor?.nome || null,
+          linked_loja: profile.loja || linkedVendedor?.loja || null,
         };
       });
 
@@ -406,7 +415,7 @@ export default function Admin() {
                     <TableHead>Nome</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead>Vendedor Vinculado</TableHead>
+                    <TableHead>Vínculo</TableHead>
                     <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -421,10 +430,18 @@ export default function Admin() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {user.linked_vendedor ? (
-                          <Badge variant="outline">{user.linked_vendedor}</Badge>
+                        {user.role === 'gerente' && user.linked_loja ? (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            🏪 {user.linked_loja}
+                          </Badge>
+                        ) : user.role === 'vendedor' && user.linked_vendedor ? (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                            👤 {user.linked_vendedor}
+                          </Badge>
+                        ) : user.role === 'admin' ? (
+                          <span className="text-muted-foreground text-sm">—</span>
                         ) : (
-                          <span className="text-muted-foreground text-sm">Não vinculado</span>
+                          <span className="text-amber-600 text-sm font-medium">⚠️ Não vinculado</span>
                         )}
                       </TableCell>
                       <TableCell>
