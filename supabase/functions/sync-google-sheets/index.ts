@@ -9,7 +9,15 @@ const corsHeaders = {
 
 // Google Sheets CSV export URL
 const SPREADSHEET_ID = '1vpiD3Qxk1G3rvpTXH2aJ2piWTzIaxknyi-eSiE9KsCM';
-const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv`;
+
+// Função para construir a URL do CSV com o nome da aba específica
+function getSheetUrl(monthCode?: string): string {
+  const sheetName = monthCode ? `Acompanhamento ${monthCode}` : undefined;
+  if (sheetName) {
+    return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  }
+  return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv`;
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -18,10 +26,24 @@ serve(async (req) => {
   }
 
   try {
+    // Parse request body to get month parameter
+    let monthCode: string | undefined;
+    try {
+      const body = await req.json();
+      monthCode = body.month; // formato: "01-26" para janeiro de 2026
+      console.log('Month code received:', monthCode);
+    } catch {
+      // Se não houver body, usa a aba padrão
+      console.log('No month specified, using default sheet');
+    }
+
     console.log('Starting Google Sheets sync...');
     
+    const sheetUrl = getSheetUrl(monthCode);
+    console.log('Fetching from URL:', sheetUrl);
+    
     // Fetch CSV from Google Sheets
-    const csvResponse = await fetch(SHEET_CSV_URL);
+    const csvResponse = await fetch(sheetUrl);
     if (!csvResponse.ok) {
       throw new Error(`Failed to fetch spreadsheet: ${csvResponse.statusText}`);
     }
@@ -101,6 +123,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       success: true, 
       message: `Synced ${data?.length || 0} vendedores`,
+      month: monthCode,
       timestamp: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

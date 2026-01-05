@@ -2,6 +2,8 @@ import { LogOut, User, Shield, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import logoConquista from '@/assets/logo-conquista.png';
+import { MonthSelector } from './MonthSelector';
+import { ChangePasswordDialog } from './ChangePasswordDialog';
 
 interface DashboardHeaderProps {
   userName?: string;
@@ -9,6 +11,8 @@ interface DashboardHeaderProps {
   onLogout?: () => void;
   onSync?: () => void;
   syncing?: boolean;
+  selectedMonth: string;
+  onMonthChange: (month: string) => void;
 }
 
 export function DashboardHeader({ 
@@ -16,7 +20,9 @@ export function DashboardHeader({
   userRole = 'vendedor', 
   onLogout,
   onSync,
-  syncing = false
+  syncing = false,
+  selectedMonth,
+  onMonthChange,
 }: DashboardHeaderProps) {
   const navigate = useNavigate();
   
@@ -51,7 +57,12 @@ export function DashboardHeader({
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          {canSync && (
+            <div className="hidden md:block">
+              <MonthSelector selectedMonth={selectedMonth} onMonthChange={onMonthChange} />
+            </div>
+          )}
           {userRole === 'admin' && (
             <Button 
               variant="secondary" 
@@ -72,11 +83,18 @@ export function DashboardHeader({
               <p className="text-xs text-white/70">{roleLabel[userRole]}</p>
             </div>
           </div>
+          <ChangePasswordDialog />
           <Button variant="ghost" size="icon" onClick={onLogout} className="text-white hover:bg-white/20">
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
       </div>
+      {/* Mobile month selector */}
+      {canSync && (
+        <div className="md:hidden px-4 pb-3">
+          <MonthSelector selectedMonth={selectedMonth} onMonthChange={onMonthChange} />
+        </div>
+      )}
     </header>
   );
 }
