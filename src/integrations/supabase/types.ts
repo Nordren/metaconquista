@@ -59,6 +59,33 @@ export type Database = {
         }
         Relationships: []
       }
+      vendedor_links: {
+        Row: {
+          created_at: string
+          id: string
+          loja: string
+          nome: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          loja: string
+          nome: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          loja?: string
+          nome?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       vendedores: {
         Row: {
           created_at: string
@@ -67,6 +94,7 @@ export type Database = {
           meta: number
           nome: string
           percentual: number
+          period: string
           posicao: number
           realizado: number
           updated_at: string
@@ -80,6 +108,7 @@ export type Database = {
           meta?: number
           nome: string
           percentual?: number
+          period?: string
           posicao?: number
           realizado?: number
           updated_at?: string
@@ -93,6 +122,7 @@ export type Database = {
           meta?: number
           nome?: string
           percentual?: number
+          period?: string
           posicao?: number
           realizado?: number
           updated_at?: string
