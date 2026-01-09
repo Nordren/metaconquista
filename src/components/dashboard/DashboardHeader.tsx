@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import logoConquista from '@/assets/logo-conquista.png';
 import { MonthSelector } from './MonthSelector';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface DashboardHeaderProps {
   userName?: string;
@@ -84,6 +85,7 @@ export function DashboardHeader({
             </div>
           </div>
           <ChangePasswordDialog />
+          <ThemeToggle />
           <Button variant="ghost" size="icon" onClick={onLogout} className="text-white hover:bg-white/20">
             <LogOut className="h-4 w-4" />
           </Button>

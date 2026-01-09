@@ -178,7 +178,7 @@ const Index = () => {
         {/* Ranking Grid */}
         {!isLoading && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredVendedores.map((vendedor) => {
+            {filteredVendedores.map((vendedor, index) => {
               const isOwnCard = role === 'vendedor' && (vendedor.userId ? vendedor.userId === user?.id : vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase());
               return (
                 <RankingCard 
@@ -187,6 +187,7 @@ const Index = () => {
                   showValues={canViewValues}
                   showOwnValues={isOwnCard}
                   highlighted={isOwnCard}
+                  index={index}
                 />
               );
             })}

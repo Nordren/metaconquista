@@ -1,13 +1,14 @@
 import { Vendedor } from '@/types/dashboard';
 import { Trophy, Medal, Award, TrendingUp, Target } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface RankingCardProps {
   vendedor: Vendedor;
   showValues?: boolean;
   highlighted?: boolean;
-  showOwnValues?: boolean; // Para mostrar valores apenas do próprio vendedor
+  showOwnValues?: boolean;
+  index?: number;
 }
 
 const getMedalIcon = (posicao: number) => {
@@ -20,7 +21,7 @@ const getMedalIcon = (posicao: number) => {
       return <Award className="h-6 w-6 text-amber-600" />;
     default:
       return (
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold text-sm">
           {posicao}º
         </div>
       );
@@ -30,13 +31,13 @@ const getMedalIcon = (posicao: number) => {
 const getCardStyle = (posicao: number) => {
   switch (posicao) {
     case 1:
-      return 'bg-gradient-to-br from-yellow-500/25 via-amber-500/15 to-orange-500/25 border-yellow-500/60 shadow-lg shadow-yellow-500/25';
+      return 'bg-gradient-to-br from-yellow-400/30 via-amber-400/20 to-orange-400/30 border-yellow-500 shadow-xl shadow-yellow-500/30 dark:from-yellow-500/40 dark:via-amber-500/30 dark:to-orange-500/40';
     case 2:
-      return 'bg-gradient-to-br from-gray-300/25 via-slate-400/15 to-gray-500/25 border-gray-400/60 shadow-md shadow-gray-400/20';
+      return 'bg-gradient-to-br from-slate-300/40 via-gray-300/30 to-slate-400/40 border-slate-400 shadow-lg shadow-slate-400/25 dark:from-slate-400/50 dark:via-gray-400/40 dark:to-slate-500/50';
     case 3:
-      return 'bg-gradient-to-br from-amber-600/25 via-orange-600/15 to-amber-700/25 border-amber-600/60 shadow-md shadow-amber-600/20';
+      return 'bg-gradient-to-br from-amber-500/30 via-orange-500/20 to-amber-600/30 border-amber-500 shadow-lg shadow-amber-500/25 dark:from-amber-500/40 dark:via-orange-500/30 dark:to-amber-600/40';
     default:
-      return 'bg-card border-border shadow-md';
+      return 'bg-card/95 border-border/80 shadow-lg dark:bg-card/90';
   }
 };
 
@@ -47,27 +48,48 @@ const getProgressColor = (percentual: number) => {
   return 'bg-red-500';
 };
 
-export function RankingCard({ vendedor, showValues = true, highlighted = false, showOwnValues = false }: RankingCardProps) {
+export function RankingCard({ 
+  vendedor, 
+  showValues = true, 
+  highlighted = false, 
+  showOwnValues = false,
+  index = 0 
+}: RankingCardProps) {
   const faltaMeta = 100 - vendedor.percentual;
   const valorFaltante = vendedor.meta - vendedor.realizado;
-  const diasRestantes = 15; // Exemplo: dias restantes no mês
+  const diasRestantes = 15;
   const vendaNecessariaDia = valorFaltante > 0 ? valorFaltante / diasRestantes : 0;
   
-  // Mostrar valores se tiver permissão OU se for o próprio card destacado
   const canSeeValues = showValues || showOwnValues;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ 
+        duration: 0.4, 
+        delay: index * 0.08,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }}
+      whileHover={{ 
+        scale: 1.02,
+        transition: { duration: 0.2 }
+      }}
       className={cn(
-        'relative overflow-hidden rounded-2xl border-2 p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl backdrop-blur-sm',
+        'relative overflow-hidden rounded-2xl border-2 p-5 backdrop-blur-sm',
         getCardStyle(vendedor.posicao),
         highlighted && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
       )}
     >
       {/* Position badge */}
-      <div className="absolute -right-2 -top-2 flex h-12 w-12 items-center justify-center">
+      <motion.div 
+        className="absolute -right-2 -top-2 flex h-12 w-12 items-center justify-center"
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ delay: index * 0.08 + 0.2, type: "spring", stiffness: 200 }}
+      >
         {getMedalIcon(vendedor.posicao)}
-      </div>
+      </motion.div>
 
       {/* Header */}
       <div className="mb-4 flex items-center gap-3">
@@ -86,17 +108,19 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false, 
           <span className="text-muted-foreground">Progresso da Meta</span>
           <span className="font-bold text-foreground">{vendedor.percentual}%</span>
         </div>
-        <div className="h-3 overflow-hidden rounded-full bg-muted">
-          <div
-            className={cn('h-full rounded-full transition-all duration-500', getProgressColor(vendedor.percentual))}
-            style={{ width: `${Math.min(vendedor.percentual, 100)}%` }}
+        <div className="h-3 overflow-hidden rounded-full bg-muted/60 dark:bg-muted/40">
+          <motion.div
+            className={cn('h-full rounded-full', getProgressColor(vendedor.percentual))}
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min(vendedor.percentual, 100)}%` }}
+            transition={{ duration: 0.8, delay: index * 0.08 + 0.3, ease: "easeOut" }}
           />
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-muted/80 border border-border/50 p-3">
+        <div className="rounded-xl bg-background/60 dark:bg-background/40 border border-border/60 p-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Target className="h-3.5 w-3.5" />
             Falta p/ meta
@@ -105,7 +129,7 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false, 
             {canSeeValues ? `R$ ${Math.max(valorFaltante, 0).toLocaleString('pt-BR')}` : `${Math.max(faltaMeta, 0).toFixed(0)}%`}
           </p>
         </div>
-        <div className="rounded-xl bg-muted/80 border border-border/50 p-3">
+        <div className="rounded-xl bg-background/60 dark:bg-background/40 border border-border/60 p-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5" />
             Precisa/dia
@@ -118,13 +142,13 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false, 
 
       {canSeeValues && (
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-muted/80 border border-border/50 p-3">
+          <div className="rounded-xl bg-background/60 dark:bg-background/40 border border-border/60 p-3">
             <p className="text-xs text-muted-foreground">Meta</p>
             <p className="text-sm font-semibold text-foreground">
               R$ {vendedor.meta.toLocaleString('pt-BR')}
             </p>
           </div>
-          <div className="rounded-xl bg-muted/80 border border-border/50 p-3">
+          <div className="rounded-xl bg-background/60 dark:bg-background/40 border border-border/60 p-3">
             <p className="text-xs text-muted-foreground">Faturamento</p>
             <p className="text-sm font-semibold text-primary">
               R$ {vendedor.realizado.toLocaleString('pt-BR')}
@@ -132,6 +156,6 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false, 
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
