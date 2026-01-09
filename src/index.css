@@ -6,24 +6,24 @@
 
 @layer base {
   :root {
-    --background: 200 20% 98%;
-    --foreground: 200 50% 10%;
+    --background: 210 25% 92%;
+    --foreground: 210 50% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 200 50% 10%;
+    --card-foreground: 210 50% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 200 50% 10%;
+    --popover-foreground: 210 50% 10%;
 
     /* Cores principais Conquista - Azul/Ciano */
     --primary: 187 80% 42%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 200 30% 95%;
-    --secondary-foreground: 200 50% 10%;
+    --secondary: 210 25% 96%;
+    --secondary-foreground: 210 50% 10%;
 
-    --muted: 200 20% 94%;
-    --muted-foreground: 200 10% 45%;
+    --muted: 210 20% 88%;
+    --muted-foreground: 210 15% 40%;
 
     --accent: 195 90% 35%;
     --accent-foreground: 0 0% 100%;
@@ -31,8 +31,8 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 20% 88%;
-    --input: 200 20% 88%;
+    --border: 210 25% 80%;
+    --input: 210 20% 85%;
     --ring: 187 80% 42%;
 
     --radius: 0.75rem;
@@ -49,12 +49,12 @@
     --gradient-end: 200 80% 35%;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 200 50% 20%;
+    --sidebar-foreground: 210 50% 20%;
     --sidebar-primary: 187 80% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 30% 95%;
-    --sidebar-accent-foreground: 200 50% 10%;
-    --sidebar-border: 200 20% 88%;
+    --sidebar-accent: 210 25% 94%;
+    --sidebar-accent-foreground: 210 50% 10%;
+    --sidebar-border: 210 25% 80%;
     --sidebar-ring: 187 80% 42%;
   }
 
