@@ -50,7 +50,7 @@ export function StatsOverview({ vendedores, showValues = true }: StatsOverviewPr
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className="rounded-2xl border border-border bg-card p-4 transition-all hover:shadow-lg"
+          className="rounded-2xl border-2 border-border bg-card p-4 transition-all hover:shadow-lg shadow-md"
         >
           <div className="flex items-center gap-3">
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.bgColor}`}>

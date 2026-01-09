@@ -30,13 +30,13 @@ const getMedalIcon = (posicao: number) => {
 const getCardStyle = (posicao: number) => {
   switch (posicao) {
     case 1:
-      return 'bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-orange-500/20 border-yellow-500/50 shadow-lg shadow-yellow-500/20';
+      return 'bg-gradient-to-br from-yellow-500/25 via-amber-500/15 to-orange-500/25 border-yellow-500/60 shadow-lg shadow-yellow-500/25';
     case 2:
-      return 'bg-gradient-to-br from-gray-300/20 via-slate-400/10 to-gray-500/20 border-gray-400/50';
+      return 'bg-gradient-to-br from-gray-300/25 via-slate-400/15 to-gray-500/25 border-gray-400/60 shadow-md shadow-gray-400/20';
     case 3:
-      return 'bg-gradient-to-br from-amber-600/20 via-orange-600/10 to-amber-700/20 border-amber-600/50';
+      return 'bg-gradient-to-br from-amber-600/25 via-orange-600/15 to-amber-700/25 border-amber-600/60 shadow-md shadow-amber-600/20';
     default:
-      return 'bg-card border-border';
+      return 'bg-card border-border shadow-md';
   }
 };
 
@@ -59,7 +59,7 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false, 
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl',
+        'relative overflow-hidden rounded-2xl border-2 p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl backdrop-blur-sm',
         getCardStyle(vendedor.posicao),
         highlighted && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
       )}
@@ -96,7 +96,7 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false, 
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-background/50 p-3">
+        <div className="rounded-xl bg-muted/80 border border-border/50 p-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Target className="h-3.5 w-3.5" />
             Falta p/ meta
@@ -105,7 +105,7 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false, 
             {canSeeValues ? `R$ ${Math.max(valorFaltante, 0).toLocaleString('pt-BR')}` : `${Math.max(faltaMeta, 0).toFixed(0)}%`}
           </p>
         </div>
-        <div className="rounded-xl bg-background/50 p-3">
+        <div className="rounded-xl bg-muted/80 border border-border/50 p-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5" />
             Precisa/dia
@@ -118,13 +118,13 @@ export function RankingCard({ vendedor, showValues = true, highlighted = false, 
 
       {canSeeValues && (
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-background/50 p-3">
+          <div className="rounded-xl bg-muted/80 border border-border/50 p-3">
             <p className="text-xs text-muted-foreground">Meta</p>
             <p className="text-sm font-semibold text-foreground">
               R$ {vendedor.meta.toLocaleString('pt-BR')}
             </p>
           </div>
-          <div className="rounded-xl bg-background/50 p-3">
+          <div className="rounded-xl bg-muted/80 border border-border/50 p-3">
             <p className="text-xs text-muted-foreground">Faturamento</p>
             <p className="text-sm font-semibold text-primary">
               R$ {vendedor.realizado.toLocaleString('pt-BR')}
