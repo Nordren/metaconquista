@@ -9,9 +9,9 @@ import { getCurrentMonth } from '@/components/dashboard/MonthSelector';
 import { useVendedores, triggerSync } from '@/hooks/useVendedores';
 import { useAuth } from '@/hooks/useAuth';
 import { mockVendedores, lojas } from '@/data/mockVendedores';
-import { Button } from '@/components/ui/button';
 import { RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -167,30 +167,54 @@ const Index = () => {
               showOwnValues={true}
               highlighted
             />
+            
+            {/* Ranking simplificado para vendedor - apenas posições */}
+            <h2 className="text-lg font-semibold mb-4 mt-8 text-foreground">Ranking Geral</h2>
+            <div className="space-y-2">
+              {filteredVendedores.map((vendedor) => {
+                const isOwn = vendedor.userId ? vendedor.userId === user?.id : vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase();
+                return (
+                  <div 
+                    key={vendedor.id}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-lg border",
+                      isOwn 
+                        ? "bg-primary/10 border-primary/30" 
+                        : "bg-card/80 border-border/60"
+                    )}
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold text-sm">
+                      {vendedor.posicao}º
+                    </div>
+                    <span className={cn("font-medium", isOwn && "text-primary")}>
+                      {vendedor.nome}
+                    </span>
+                    <span className="ml-auto text-sm text-muted-foreground">
+                      {vendedor.percentual}%
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {/* Podium */}
-        {!isLoading && filteredVendedores.length >= 3 && (
+        {/* Podium - apenas para admin e gerente */}
+        {!isLoading && role !== 'vendedor' && filteredVendedores.length >= 3 && (
           <TopPodium vendedores={filteredVendedores} showValues={canViewValues} />
         )}
 
-        {/* Ranking Grid */}
-        {!isLoading && (
+        {/* Ranking Grid - apenas para admin e gerente */}
+        {!isLoading && role !== 'vendedor' && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredVendedores.map((vendedor, index) => {
-              const isOwnCard = role === 'vendedor' && (vendedor.userId ? vendedor.userId === user?.id : vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase());
-              return (
-                <RankingCard 
-                  key={vendedor.id} 
-                  vendedor={vendedor} 
-                  showValues={canViewValues}
-                  showOwnValues={isOwnCard}
-                  highlighted={isOwnCard}
-                  index={index}
-                />
-              );
-            })}
+            {filteredVendedores.map((vendedor, index) => (
+              <RankingCard 
+                key={vendedor.id} 
+                vendedor={vendedor} 
+                showValues={canViewValues}
+                index={index}
+              />
+            ))}
           </div>
         )}
 
