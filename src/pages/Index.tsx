@@ -168,33 +168,35 @@ const Index = () => {
               highlighted
             />
             
-            {/* Ranking simplificado para vendedor - apenas posições */}
-            <h2 className="text-lg font-semibold mb-4 mt-8 text-foreground">Ranking Geral</h2>
+            {/* Ranking simplificado para vendedor - apenas posições da mesma loja */}
+            <h2 className="text-lg font-semibold mb-4 mt-8 text-foreground">Ranking da Loja</h2>
             <div className="space-y-2">
-              {filteredVendedores.map((vendedor) => {
-                const isOwn = vendedor.userId ? vendedor.userId === user?.id : vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase();
-                return (
-                  <div 
-                    key={vendedor.id}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg border",
-                      isOwn 
-                        ? "bg-primary/10 border-primary/30" 
-                        : "bg-card/80 border-border/60"
-                    )}
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold text-sm">
-                      {vendedor.posicao}º
+              {filteredVendedores
+                .filter((v) => v.loja === linkedVendedor.loja)
+                .map((vendedor, idx) => {
+                  const isOwn = vendedor.userId ? vendedor.userId === user?.id : vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase();
+                  return (
+                    <div 
+                      key={vendedor.id}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-lg border",
+                        isOwn 
+                          ? "bg-primary/10 border-primary/30" 
+                          : "bg-card/80 border-border/60"
+                      )}
+                    >
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold text-sm">
+                        {idx + 1}º
+                      </div>
+                      <span className={cn("font-medium", isOwn && "text-primary")}>
+                        {vendedor.nome}
+                      </span>
+                      <span className="ml-auto text-sm text-muted-foreground">
+                        {vendedor.percentual}%
+                      </span>
                     </div>
-                    <span className={cn("font-medium", isOwn && "text-primary")}>
-                      {vendedor.nome}
-                    </span>
-                    <span className="ml-auto text-sm text-muted-foreground">
-                      {vendedor.percentual}%
-                    </span>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           </div>
         )}
