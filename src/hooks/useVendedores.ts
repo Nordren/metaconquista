@@ -29,11 +29,35 @@ async function fetchVendedores(period: string): Promise<Vendedor[]> {
   }));
 }
 
+// Fetch the vendedor_link for the current user
+async function fetchVendedorLink(userId: string): Promise<{ nome: string; loja: string } | null> {
+  const { data, error } = await supabase
+    .from('vendedor_links')
+    .select('nome, loja')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching vendedor_link:', error);
+    return null;
+  }
+
+  return data;
+}
+
 export function useVendedores(period: string) {
   return useQuery({
     queryKey: ['vendedores', period],
     queryFn: () => fetchVendedores(period),
     refetchInterval: 60000, // Refetch every minute for near-realtime
+  });
+}
+
+export function useVendedorLink(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['vendedor_link', userId],
+    queryFn: () => fetchVendedorLink(userId!),
+    enabled: !!userId,
   });
 }
 

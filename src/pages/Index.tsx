@@ -6,7 +6,7 @@ import { TopPodium } from '@/components/dashboard/TopPodium';
 import { RankingCard } from '@/components/dashboard/RankingCard';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { getCurrentMonth } from '@/components/dashboard/MonthSelector';
-import { useVendedores, triggerSync } from '@/hooks/useVendedores';
+import { useVendedores, useVendedorLink, triggerSync } from '@/hooks/useVendedores';
 import { useAuth } from '@/hooks/useAuth';
 import { mockVendedores, lojas } from '@/data/mockVendedores';
 import { RefreshCw, Loader2 } from 'lucide-react';
@@ -22,6 +22,7 @@ const Index = () => {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const effectiveMonth = role === 'vendedor' ? currentMonth : selectedMonth;
   const { data: vendedores, isLoading, refetch } = useVendedores(effectiveMonth);
+  const { data: vendedorLink } = useVendedorLink(user?.id);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -57,18 +58,17 @@ const Index = () => {
   // Encontrar o vendedor vinculado ao usuário atual (para vendedor comum)
   const linkedVendedor = useMemo(() => {
     if (role !== 'vendedor') return null;
+    if (!vendedorLink) return null;
 
-    // Prefer link por user_id (mais confiável)
-    const uid = user?.id;
-    if (uid) {
-      const byUserId = filteredVendedores.find(v => v.userId === uid);
-      if (byUserId) return byUserId;
-    }
+    // Match pelo nome e loja do vendedor_link (case insensitive)
+    const linkNome = vendedorLink.nome.toLowerCase().trim();
+    const linkLoja = vendedorLink.loja.toLowerCase().trim();
 
-    // Fallback por nome (para dados mock/legado)
-    if (!profile?.nome) return null;
-    return filteredVendedores.find(v => v.nome.toLowerCase() === profile.nome.toLowerCase());
-  }, [filteredVendedores, role, profile?.nome, user?.id]);
+    return sourceVendedores.find(v => 
+      v.nome.toLowerCase().trim() === linkNome && 
+      v.loja.toLowerCase().trim() === linkLoja
+    );
+  }, [sourceVendedores, role, vendedorLink]);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -174,7 +174,9 @@ const Index = () => {
               {filteredVendedores
                 .filter((v) => v.loja === linkedVendedor.loja)
                 .map((vendedor, idx) => {
-                  const isOwn = vendedor.userId ? vendedor.userId === user?.id : vendedor.nome.toLowerCase() === profile?.nome?.toLowerCase();
+                  const isOwn = vendedorLink && 
+                    vendedor.nome.toLowerCase().trim() === vendedorLink.nome.toLowerCase().trim() &&
+                    vendedor.loja.toLowerCase().trim() === vendedorLink.loja.toLowerCase().trim();
                   return (
                     <div 
                       key={vendedor.id}
