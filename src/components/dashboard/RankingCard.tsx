@@ -132,10 +132,10 @@ export function RankingCard({
         <div className="rounded-xl bg-background/60 dark:bg-background/40 border border-border/60 p-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5" />
-            Precisa/dia
+            Venda/Dia Hoje
           </div>
           <p className="mt-1 text-lg font-bold text-foreground">
-            {canSeeValues ? `R$ ${vendaNecessariaDia.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : '---'}
+            {canSeeValues ? `R$ ${vendedor.vendaDia.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}` : '---'}
           </p>
         </div>
       </div>
