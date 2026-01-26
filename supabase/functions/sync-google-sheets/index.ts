@@ -117,7 +117,7 @@ serve(async (req) => {
         const meta = parseNumber(row['Meta Atual'] || row['Meta atual'] || row.meta);
         const realizado = parseNumber(row['Venda'] || row.Venda || row.venda);
         const percentual = parseNumber(row['%'] || row.percentual);
-        const venda_dia = parseNumber(row['Venda/Dia'] || row['Venda/dia'] || row.venda_dia);
+        const venda_dia = parseNumber(row['Venda/Dia Hoje'] || row['Venda/Dia hoje'] || row['Venda/Dia'] || row['Venda/dia'] || row.venda_dia);
 
         const key = `${normalizeKey(nome)}::${normalizeKey(loja)}`;
         const user_id = linkMap.get(key) ?? null;
