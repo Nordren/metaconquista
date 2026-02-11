@@ -29,4 +29,4 @@ export const mockVendedores: Vendedor[] = [
   { id: '16', nome: 'Beatriz Cardoso', loja: 'Serra', meta: 38000, realizado: 22800, percentual: 60, vendaDia: 1520, posicao: 4, period },
 ];
 
-export const lojas = ['Ubá', 'GV', 'Itabira', 'Serra'] as const;
+export const lojas = ['Ubá', 'GV', 'Itabira', 'Serra', 'BH'] as const;
