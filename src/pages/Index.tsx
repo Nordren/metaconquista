@@ -31,6 +31,13 @@ const Index = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
+  // Redirect Eletrocell users to their portal
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && profile?.loja === 'Eletrocell' && role !== 'admin') {
+      navigate('/eletrocell', { replace: true });
+    }
+  }, [authLoading, isAuthenticated, profile?.loja, role, navigate]);
+
   // Use database data if available; fallback to mock ONLY for the current month
   const shouldUseMock = (!vendedores || vendedores.length === 0) && effectiveMonth === currentMonth;
   const sourceVendedores = shouldUseMock ? mockVendedores : (vendedores || []);
