@@ -102,9 +102,10 @@ export default function Admin() {
 
       setVendedores(vendedoresData || []);
       
-      // Extract unique stores
-      const uniqueLojas = [...new Set((vendedoresData || []).map(v => v.loja))].sort();
-      setLojas(uniqueLojas);
+      // Extract unique stores - include all known stores even if no vendedores exist for current month
+      const vendedorLojas = (vendedoresData || []).map(v => v.loja);
+      const allLojas = [...new Set([...vendedorLojas, 'Eletrocell'])].sort();
+      setLojas(allLojas);
 
       const usersWithRoles: UserWithRole[] = ((profiles || []) as Profile[]).map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.id);
