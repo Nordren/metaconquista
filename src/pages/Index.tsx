@@ -39,6 +39,9 @@ const Index = () => {
   const filteredVendedores = useMemo(() => {
     let filtered = [...sourceVendedores];
     
+    // Excluir Eletrocell do dashboard Conquista
+    filtered = filtered.filter((v) => v.loja !== 'Eletrocell');
+    
     // Gerente só vê a loja dele (baseado no profile.loja)
     if (role === 'gerente' && profile?.loja) {
       filtered = filtered.filter((v) => v.loja === profile.loja);
