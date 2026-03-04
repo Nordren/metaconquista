@@ -6,7 +6,7 @@ import { TopPodium } from '@/components/dashboard/TopPodium';
 import { RankingCard } from '@/components/dashboard/RankingCard';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { getCurrentMonth } from '@/components/dashboard/MonthSelector';
-import { useVendedores, useVendedorLink, triggerSync } from '@/hooks/useVendedores';
+import { useVendedores, useVendedorLink, triggerSync, triggerEletrocellSync } from '@/hooks/useVendedores';
 import { useAuth } from '@/hooks/useAuth';
 import { mockVendedores, lojas } from '@/data/mockVendedores';
 import { RefreshCw, Loader2 } from 'lucide-react';
@@ -73,11 +73,16 @@ const Index = () => {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      const result = await triggerSync(selectedMonth);
-      if (result.error) {
-        toast.error('Erro ao sincronizar: ' + result.error.message);
+      // Sync both Conquista and Eletrocell in parallel
+      const [result, eletrocellResult] = await Promise.all([
+        triggerSync(selectedMonth),
+        triggerEletrocellSync(),
+      ]);
+      if (result.error || eletrocellResult.error) {
+        const errMsg = result.error?.message || eletrocellResult.error?.message;
+        toast.error('Erro ao sincronizar: ' + errMsg);
       } else {
-        toast.success(`Dados de ${selectedMonth} sincronizados com sucesso!`);
+        toast.success(`Dados sincronizados com sucesso!`);
         refetch();
       }
     } catch (error) {
