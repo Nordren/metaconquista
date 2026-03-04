@@ -6,12 +6,13 @@ import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { getCurrentMonth } from '@/components/dashboard/MonthSelector';
 import { useVendedores, useVendedorLink, triggerEletrocellSync } from '@/hooks/useVendedores';
 import { useAuth } from '@/hooks/useAuth';
-import { RefreshCw, Loader2, LogOut, User, Zap, Shield } from 'lucide-react';
+import { RefreshCw, Loader2, LogOut, User, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ChangePasswordDialog } from '@/components/dashboard/ChangePasswordDialog';
 import { cn } from '@/lib/utils';
+import logoEletrocell from '@/assets/logo-eletrocell.png';
 
 const Eletrocell = () => {
   const navigate = useNavigate();
@@ -103,12 +104,11 @@ const Eletrocell = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Eletrocell Header */}
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-gradient-to-r from-emerald-500 to-teal-600 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-red-700/50 bg-gradient-to-r from-red-600 to-red-700 backdrop-blur-xl">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <Zap className="h-7 w-7 text-white" />
-              <span className="text-xl font-bold text-white">Eletrocell</span>
+              <img src={logoEletrocell} alt="Eletrô.cell" className="h-9 w-auto" />
             </div>
             {isAdmin && (
               <>
