@@ -1,4 +1,4 @@
-import { LogOut, User, Shield, RefreshCw } from 'lucide-react';
+import { LogOut, User, Shield, RefreshCw, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import logoConquista from '@/assets/logo-conquista.png';
@@ -65,15 +65,26 @@ export function DashboardHeader({
             </div>
           )}
           {userRole === 'admin' && (
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              onClick={() => navigate('/admin')} 
-              className="gap-2 bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin</span>
-            </Button>
+            <>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                onClick={() => navigate('/eletrocell')} 
+                className="gap-2 bg-white/20 text-white border-white/30 hover:bg-white/30"
+              >
+                <Zap className="h-4 w-4" />
+                <span className="hidden sm:inline">Eletrocell</span>
+              </Button>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                onClick={() => navigate('/admin')} 
+                className="gap-2 bg-white/20 text-white border-white/30 hover:bg-white/30"
+              >
+                <Shield className="h-4 w-4" />
+                <span className="hidden sm:inline">Admin</span>
+              </Button>
+            </>
           )}
           <div className="hidden items-center gap-2 sm:flex">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
