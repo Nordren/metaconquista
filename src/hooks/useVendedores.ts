@@ -67,3 +67,8 @@ export async function triggerSync(month?: string) {
   });
   return response;
 }
+
+export async function triggerEletrocellSync() {
+  const response = await supabase.functions.invoke('sync-eletrocell');
+  return response;
+}
