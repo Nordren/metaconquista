@@ -6,7 +6,7 @@ import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { getCurrentMonth } from '@/components/dashboard/MonthSelector';
 import { useVendedores, useVendedorLink, triggerEletrocellSync } from '@/hooks/useVendedores';
 import { useAuth } from '@/hooks/useAuth';
-import { RefreshCw, Loader2, LogOut, User, Zap } from 'lucide-react';
+import { RefreshCw, Loader2, LogOut, User, Zap, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -129,6 +129,15 @@ const Eletrocell = () => {
                   className="bg-white/20 text-white border-white/30 hover:bg-white/30"
                 >
                   <span className="hidden sm:inline">Conquista</span>
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate('/admin')}
+                  className="gap-2 bg-white/20 text-white border-white/30 hover:bg-white/30"
+                >
+                  <Shield className="h-4 w-4" />
+                  <span className="hidden sm:inline">Admin</span>
                 </Button>
               </>
             )}
