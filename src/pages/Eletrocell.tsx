@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { TopPodium } from '@/components/dashboard/TopPodium';
 import { RankingCard } from '@/components/dashboard/RankingCard';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
-import { getCurrentMonth } from '@/components/dashboard/MonthSelector';
+import { getCurrentMonth, MonthSelector } from '@/components/dashboard/MonthSelector';
 import { useVendedores, useVendedorLink, triggerEletrocellSync } from '@/hooks/useVendedores';
 import { useAuth } from '@/hooks/useAuth';
 import { RefreshCw, Loader2, LogOut, User, Shield } from 'lucide-react';
@@ -19,7 +19,9 @@ const Eletrocell = () => {
   const { user, profile, role, loading: authLoading, isAuthenticated, signOut } = useAuth();
   const [syncing, setSyncing] = useState(false);
   const currentMonth = getCurrentMonth();
-  const { data: vendedores, isLoading, refetch } = useVendedores(currentMonth);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const effectiveMonth = role === 'vendedor' ? currentMonth : selectedMonth;
+  const { data: vendedores, isLoading, refetch } = useVendedores(effectiveMonth);
   const { data: vendedorLink } = useVendedorLink(user?.id);
 
   // Only admin or users with loja=Eletrocell can access
@@ -144,6 +146,11 @@ const Eletrocell = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
+            {(isAdmin || role === 'gerente') && (
+              <div className="hidden md:block">
+                <MonthSelector selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+              </div>
+            )}
             <div className="hidden items-center gap-2 sm:flex">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
                 <User className="h-4 w-4 text-white" />
@@ -159,6 +166,11 @@ const Eletrocell = () => {
             </Button>
           </div>
         </div>
+        {(isAdmin || role === 'gerente') && (
+          <div className="md:hidden px-4 pb-3">
+            <MonthSelector selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+          </div>
+        )}
       </header>
 
       <main className="container mx-auto px-4 py-8">
